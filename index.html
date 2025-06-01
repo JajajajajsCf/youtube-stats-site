@@ -2,10 +2,36 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Testseite</title>
+  <title>YouTube Stats</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 2rem; }
+  </style>
 </head>
 <body>
-  <h1>Hallo Welt!</h1>
-  <p>Diese Seite wird von GitHub Pages gehostet.</p>
+  <h1>YouTube Kanal-Stats</h1>
+  <div id="stats">
+    <p><strong>Kanal:</strong> <span id="channelTitle">...</span></p>
+    <p><strong>Abonnenten:</strong> <span id="subscriberCount">...</span></p>
+    <p><strong>Gesamt-Views:</strong> <span id="viewCount">...</span></p>
+  </div>
+
+  <script>
+    const apiKey = 'AIzaSyAVXXKVyZu2mk38HoKZlyehPimjfDGQBaw';
+    const channelId = 'UC419XwNMLkI5KmVCo9sRPQg';
+
+    async function loadStats() {
+      const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${apiKey}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      const stats = data.items[0].statistics;
+      const snippet = data.items[0].snippet;
+
+      document.getElementById('channelTitle').textContent = snippet.title;
+      document.getElementById('subscriberCount').textContent = stats.subscriberCount;
+      document.getElementById('viewCount').textContent = stats.viewCount;
+    }
+
+    loadStats();
+  </script>
 </body>
 </html>
