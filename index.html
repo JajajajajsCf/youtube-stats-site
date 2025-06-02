@@ -164,7 +164,7 @@
 
     async function loadStats() {
       const statsUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${apiKey}`;
-      const vidsUrl = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=3`;
+      const vidsUrl = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=3&_=${Date.now()}`;
 
       try {
         const [statsRes, vidsRes] = await Promise.all([
@@ -195,8 +195,9 @@
 
         const videosEl = document.getElementById('videos');
         videosEl.innerHTML = "";
+
         vidsData.items.forEach(item => {
-          if (item.id.videoId) {
+          if (item.id.kind === "youtube#video" && item.id.videoId) {
             const iframe = document.createElement('iframe');
             iframe.src = `https://www.youtube.com/embed/${item.id.videoId}`;
             videosEl.appendChild(iframe);
@@ -205,13 +206,14 @@
 
       } catch (err) {
         console.error("Fehler beim Laden der Daten:", err);
+        document.getElementById('videos').innerHTML = "<p style='color:red'>Fehler beim Laden der Videos.</p>";
       }
     }
 
     document.getElementById('refreshBtn').addEventListener('click', loadStats);
     loadStats();
 
-    // Schneeflocken dauerhaft & mit Mausbewegung beeinflusst
+    // Schneeflocken
     let mouseX = window.innerWidth / 2;
 
     document.addEventListener('mousemove', e => {
@@ -253,3 +255,4 @@
   </script>
 </body>
 </html>
+
