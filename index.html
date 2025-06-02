@@ -1,123 +1,247 @@
-<script>
-  const apiKey = 'AIzaSyAVXXKVyZu2mk38HoKZlyehPimjfDGQBaw';
-  const channelId = 'UC419XwNMLkI5KmVCo9sRPQg';
-
-  function animateCountUp(elementId, endValue) {
-    const duration = 1500;
-    const start = 0;
-    const range = endValue - start;
-    const startTime = performance.now();
-
-    function step(currentTime) {
-      const progress = Math.min((currentTime - startTime) / duration, 1);
-      const value = Math.floor(progress * range + start);
-      document.getElementById(elementId).textContent = value.toLocaleString('de-DE');
-      if (progress < 1) requestAnimationFrame(step);
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>YouTube Stats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background-color: #000;
+      font-family: 'VT323', monospace;
+      color: #00ff99;
     }
+    #welcome {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      z-index: 9999;
+      animation: fallAway 3.5s forwards ease-in-out, flicker 2s infinite;
+    }
+    @keyframes fallAway {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-200vh) scale(0); display: none; }
+    }
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+      20%, 22%, 24%, 55% { opacity: 0.4; }
+    }
+    h1 {
+      text-align: center;
+      margin: 2rem 0 1rem;
+      font-size: 3rem;
+      animation: flicker 2.5s infinite;
+      text-shadow: 0 0 4px #0f0, 0 0 10px #0f0;
+    }
+    #stats {
+      background: #111;
+      margin: 0 auto;
+      max-width: 400px;
+      padding: 2rem;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 0 20px #00ff88;
+      animation: glowBorder 6s linear infinite, flicker 3s infinite;
+    }
+    @keyframes glowBorder {
+      0% { box-shadow: 0 0 15px #00ff88; }
+      50% { box-shadow: 0 0 30px #00ffaa; }
+      100% { box-shadow: 0 0 15px #00ff88; }
+    }
+    #stats p {
+      margin: 1rem 0;
+      text-shadow: 0 0 3px #00ffcc;
+    }
+    .goal {
+      color: #00ffaa;
+      font-style: italic;
+    }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    button {
+      padding: 0.6rem 1.5rem;
+      font-size: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #00ffaa;
+      background: transparent;
+      color: #00ffaa;
+      cursor: pointer;
+      font-family: 'VT323', monospace;
+      text-shadow: 0 0 4px #00ffaa;
+    }
+    button:hover {
+      background: #00ffaa22;
+    }
+    #videos {
+      margin: 3rem auto;
+      max-width: 800px;
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      padding: 0 1rem;
+    }
+    iframe {
+      width: 100%;
+      height: 200px;
+      border: none;
+      border-radius: 12px;
+    }
+    footer {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      font-size: 1rem;
+      color: red;
+      z-index: 10;
+      text-shadow: 0 0 3px red;
+    }
+    .snowflake {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      font-size: 1rem;
+      user-select: none;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="welcome">Herzlich Willkommen</div>
+  <h1>YouTube Kanal-Stats</h1>
+  <div id="stats">
+    <p><strong>Kanal:</strong> <span id="channelTitle">...</span></p>
+    <p><strong>Abonnenten:</strong> <span id="subscriberCount">0</span></p>
+    <p><strong>Views:</strong> <span id="viewCount">0</span></p>
+    <p class="goal" id="goalText"></p>
+    <div class="buttons">
+      <button id="refreshBtn">↻ Aktualisieren</button>
+      <button id="channelLinkBtn">🔗 Zum Kanal</button>
+    </div>
+  </div>
+  <div id="videos"></div>
+  <footer>developed by Jakob</footer>
 
-    requestAnimationFrame(step);
-  }
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const apiKey = 'AIzaSyAVXXKVyZu2mk38HoKZlyehPimjfDGQBaw';
+      const channelId = 'UC419XwNMLkI5KmVCo9sRPQg';
 
-  async function loadStats() {
-    const statsUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${apiKey}`;
-    const vidsUrl = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=3&_=${Date.now()}`;
-
-    try {
-      const [statsRes, vidsRes] = await Promise.all([
-        fetch(statsUrl),
-        fetch(vidsUrl)
-      ]);
-      const statsData = await statsRes.json();
-      const vidsData = await vidsRes.json();
-
-      const snippet = statsData.items[0].snippet;
-      const stats = statsData.items[0].statistics;
-
-      document.getElementById('channelTitle').textContent = snippet.title;
-
-      const subs = parseInt(stats.subscriberCount, 10);
-      const views = parseInt(stats.viewCount, 10);
-
-      animateCountUp('subscriberCount', subs);
-      animateCountUp('viewCount', views);
-
-      const nextGoal = Math.ceil(subs / 10) * 10;
-      const remaining = nextGoal - subs;
-      document.getElementById('goalText').textContent =
-        remaining > 0
-          ? `Es fehlen noch ${remaining} Abonnent${remaining > 1 ? 'en' : ''} bis ${nextGoal}.`
-          : `Ziel erreicht mit ${subs} Abonnenten!`;
-
-      document.getElementById('channelLinkBtn').onclick = () => {
-        window.open(`https://www.youtube.com/channel/${channelId}`, '_blank');
-      };
-
-      const videosEl = document.getElementById('videos');
-      videosEl.innerHTML = "";
-
-      let videoCount = 0;
-
-      vidsData.items.forEach(item => {
-        if (item.id.kind === "youtube#video" && item.id.videoId) {
-          const iframe = document.createElement('iframe');
-          iframe.src = `https://www.youtube.com/embed/${item.id.videoId}`;
-          videosEl.appendChild(iframe);
-          videoCount++;
+      function animateCountUp(elementId, endValue) {
+        const duration = 1500;
+        const start = 0;
+        const range = endValue - start;
+        const startTime = performance.now();
+        function step(currentTime) {
+          const progress = Math.min((currentTime - startTime) / duration, 1);
+          const value = Math.floor(progress * range + start);
+          document.getElementById(elementId).textContent = value.toLocaleString('de-DE');
+          if (progress < 1) requestAnimationFrame(step);
         }
-      });
-
-      if (videoCount === 0) {
-        videosEl.innerHTML = "<p style='color:red'>Fehler beim Laden der Videos. Bitte kontaktieren Sie Jakob, um den Fehler zu überprüfen.</p>";
+        requestAnimationFrame(step);
       }
 
-    } catch (err) {
-      console.error("Fehler beim Laden der Daten:", err);
-      document.getElementById('videos').innerHTML = "<p style='color:red'>Fehler beim Laden der Videos. Bitte kontaktieren Sie Jakob, um den Fehler zu überprüfen.</p>";
-    }
-  }
+      async function loadStats() {
+        const statsUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${apiKey}`;
+        const vidsUrl = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=3&_=${Date.now()}`;
 
-  document.getElementById('refreshBtn').addEventListener('click', loadStats);
-  loadStats();
+        try {
+          const [statsRes, vidsRes] = await Promise.all([
+            fetch(statsUrl),
+            fetch(vidsUrl)
+          ]);
+          const statsData = await statsRes.json();
+          const vidsData = await vidsRes.json();
 
-  // Schneeflocken
-  let mouseX = window.innerWidth / 2;
+          const snippet = statsData.items[0].snippet;
+          const stats = statsData.items[0].statistics;
 
-  document.addEventListener('mousemove', e => {
-    mouseX = e.clientX;
-  });
+          document.getElementById('channelTitle').textContent = snippet.title;
 
-  function createSnowflake() {
-    const flake = document.createElement('div');
-    flake.className = 'snowflake';
-    flake.textContent = '❄️';
+          const subs = parseInt(stats.subscriberCount, 10);
+          const views = parseInt(stats.viewCount, 10);
+          animateCountUp('subscriberCount', subs);
+          animateCountUp('viewCount', views);
 
-    const size = Math.random() * 10 + 10;
-    flake.style.fontSize = size + 'px';
+          const nextGoal = Math.ceil(subs / 10) * 10;
+          const remaining = nextGoal - subs;
+          document.getElementById('goalText').textContent =
+            remaining > 0
+              ? `Es fehlen noch ${remaining} Abonnent${remaining > 1 ? 'en' : ''} bis ${nextGoal}.`
+              : `Ziel erreicht mit ${subs} Abonnenten!`;
 
-    const startX = Math.random() * window.innerWidth;
-    flake.style.left = startX + 'px';
-    flake.style.top = '-20px';
+          document.getElementById('channelLinkBtn').onclick = () => {
+            window.open(`https://www.youtube.com/channel/${channelId}`, '_blank');
+          };
 
-    document.body.appendChild(flake);
+          const videosEl = document.getElementById('videos');
+          videosEl.innerHTML = "";
+          let loaded = 0;
 
-    let y = -20;
-    const xSpeed = (mouseX - startX) / 300 + (Math.random() - 0.5);
-    let x = startX;
+          vidsData.items.forEach(item => {
+            if (item.id.kind === "youtube#video" && item.id.videoId) {
+              const iframe = document.createElement('iframe');
+              iframe.src = `https://www.youtube.com/embed/${item.id.videoId}`;
+              videosEl.appendChild(iframe);
+              loaded++;
+            }
+          });
 
-    const fall = setInterval(() => {
-      y += 1.5;
-      x += xSpeed;
-      flake.style.top = y + 'px';
-      flake.style.left = x + 'px';
+          if (loaded === 0) {
+            videosEl.innerHTML = "<p style='color:red'>Fehler beim Laden der Videos. Bitte kontaktieren Sie Jakob, um den Fehler zu überprüfen.</p>";
+          }
 
-      if (y > window.innerHeight + 20) {
-        flake.remove();
-        clearInterval(fall);
+        } catch (err) {
+          console.error("Fehler beim Laden der Daten:", err);
+          document.getElementById('videos').innerHTML =
+            "<p style='color:red'>Fehler beim Laden der Videos. Bitte kontaktieren Sie Jakob, um den Fehler zu überprüfen.</p>";
+        }
       }
-    }, 16);
-  }
 
-  setInterval(createSnowflake, 150);
-</script>
+      document.getElementById('refreshBtn').addEventListener('click', loadStats);
+      loadStats();
 
+      // Schneeflocken
+      let mouseX = window.innerWidth / 2;
+      document.addEventListener('mousemove', e => mouseX = e.clientX);
 
+      function createSnowflake() {
+        const flake = document.createElement('div');
+        flake.className = 'snowflake';
+        flake.textContent = '❄️';
+        flake.style.fontSize = `${Math.random() * 10 + 10}px`;
+        const startX = Math.random() * window.innerWidth;
+        flake.style.left = `${startX}px`;
+        flake.style.top = `-20px`;
+        document.body.appendChild(flake);
+        let y = -20, x = startX;
+        const xSpeed = (mouseX - startX) / 300 + (Math.random() - 0.5);
+        const fall = setInterval(() => {
+          y += 1.5;
+          x += xSpeed;
+          flake.style.top = y + 'px';
+          flake.style.left = x + 'px';
+          if (y > window.innerHeight + 20) {
+            flake.remove();
+            clearInterval(fall);
+          }
+        }, 16);
+      }
+
+      setInterval(createSnowflake, 150);
+    });
+  </script>
+</body>
+</html>
