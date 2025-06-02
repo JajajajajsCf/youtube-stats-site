@@ -5,172 +5,122 @@
   <title>YouTube Stats</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* Grundstyle */
-    body {
+    /* Basis-Styles siehe dein bisheriger Code … */
+    html, body {
       margin: 0;
-      min-height: 100vh;
+      padding: 0;
+      background: #000;
+      color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
         Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      background-color: #000;
-      color: #fff;
+    }
+
+    body {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      min-height: 100vh;
       overflow: hidden;
       position: relative;
-      user-select: none;
       padding: 1rem;
-      box-sizing: border-box;
     }
 
-    h1 {
-      font-weight: 600;
-      font-size: 2.5rem;
-      margin-bottom: 1.5rem;
-      z-index: 10;
+    /* ✨ Willkommensbildschirm */
+    #welcome {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      transition: opacity 1s ease, transform 1s ease;
+      animation: fadeInScale 1s ease;
+    }
+
+    #welcome h1 {
+      font-size: 3rem;
+      color: #007aff;
+      animation: glow 2s ease-in-out infinite alternate;
       text-align: center;
     }
 
-    /* Stats Container */
+    @keyframes glow {
+      0% { text-shadow: 0 0 10px #007aff88; }
+      100% { text-shadow: 0 0 25px #00e0ffcc; }
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .fadeOut {
+      opacity: 0;
+      transform: scale(1.05);
+      pointer-events: none;
+    }
+
+    /* Stat Container (dein bestehendes Styling leicht verkürzt) */
     #stats {
       background: #111;
       padding: 2rem 2.5rem;
       border-radius: 16px;
       box-shadow: 0 8px 24px rgb(0 0 255 / 0.3);
       max-width: 400px;
-      width: 100%;
-      transition: 
-        box-shadow 0.3s ease,
-        transform 0.3s ease,
-        background-color 0.3s ease,
-        color 0.3s ease;
-      cursor: default;
-      position: relative;
-      z-index: 10;
       text-align: center;
-      user-select: text;
+      transition: all 0.3s ease;
     }
 
     #stats:hover {
       background-color: #fff;
       color: #000;
       box-shadow: 0 0 30px 6px #007aff;
-      transform: translateY(-15px);
+      transform: translateY(-10px);
     }
 
     #stats p {
-      font-size: 1.125rem;
       margin: 1rem 0;
-      transition: color 0.3s ease;
-      word-wrap: break-word;
+      font-size: 1.1rem;
     }
 
-    strong {
-      font-weight: 600;
-      color: inherit;
-    }
-
-    .goal {
-      margin-top: 1rem;
-      font-size: 1rem;
-      font-style: italic;
-      color: #007aff;
-      transition: color 0.3s ease;
-    }
-
-    /* Buttons Container */
-    .buttons {
-      margin-top: 1.5rem;
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    /* Allgemeine Button Styles */
     button {
       padding: 0.65rem 2rem;
-      font-size: 1.1rem;
+      margin: 0.5rem;
       border-radius: 12px;
       font-weight: 700;
+      font-size: 1rem;
+      border: none;
       cursor: pointer;
-      border: none;
-      transition: all 0.35s ease;
-      user-select: none;
-      box-shadow: none;
-      min-width: 140px;
     }
 
-    /* Aktualisieren-Button */
     #refreshBtn {
-      background-color: #007aff;
+      background: #007aff;
       color: white;
-      border: none;
-      box-shadow: 0 0 10px #007aff88;
     }
 
-    #refreshBtn:hover {
-      background-color: #005bb5;
-      box-shadow: 0 0 20px #005bb5cc;
-    }
-
-    /* Kanal-Link Button mit starkem, animiertem Farbverlauf-Glow */
     #channelLinkBtn {
-      background-color: transparent;
+      background: transparent;
       color: #007aff;
-      border: 3px solid #007aff;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 0 15px #007aff99;
+      border: 2px solid #007aff;
     }
 
-    #channelLinkBtn::before {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(270deg, #007aff, #00e0ff, #007aff);
-      animation: rainbowGlow 2.5s linear infinite;
-      filter: blur(8px);
-      opacity: 0.7;
-      border-radius: 14px;
-      z-index: -1;
-    }
-
-    #channelLinkBtn:hover {
-      color: #00e0ff;
-      border-color: #00e0ff;
-      box-shadow: 0 0 25px 6px #00e0ff;
-    }
-
-    @keyframes rainbowGlow {
-      0% {
-        background-position: 0% 50%;
-      }
-      100% {
-        background-position: 200% 50%;
-      }
-    }
-
-    /* Footer */
     footer {
       position: fixed;
-      right: 1rem;
       bottom: 1rem;
-      font-size: 0.875rem;
-      color: #555;
-      font-weight: 500;
-      user-select: none;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      z-index: 5;
-      pointer-events: none;
+      right: 1rem;
+      font-size: 0.8rem;
+      color: #444;
     }
 
-    /* Background Text "developed by Jakob" Animation */
     .bg-text {
       position: fixed;
       color: rgba(0, 122, 255, 0.07);
@@ -180,62 +130,43 @@
       animation: fadeMove 10s linear infinite;
       white-space: nowrap;
       z-index: 1;
-      text-shadow: 0 0 8px rgba(0, 122, 255, 0.2);
     }
 
-    /* Animation für Background Text */
     @keyframes fadeMove {
-      0% {
-        opacity: 0;
-        transform: translateX(100vw) scale(1);
-      }
-      10% {
-        opacity: 0.15;
-      }
-      50% {
-        opacity: 0.07;
-      }
-      90% {
-        opacity: 0;
-        transform: translateX(-100vw) scale(1);
-      }
-      100% {
-        opacity: 0;
-      }
+      0% { opacity: 0; transform: translateX(100vw); }
+      10% { opacity: 0.15; }
+      50% { opacity: 0.07; }
+      90% { opacity: 0; transform: translateX(-100vw); }
+      100% { opacity: 0; }
     }
 
-    /* Responsive Schriftgrößen */
     @media (max-width: 480px) {
-      h1 {
-        font-size: 1.8rem;
+      #stats {
+        width: 100%;
       }
-      #stats p {
-        font-size: 1rem;
-      }
-      .goal {
-        font-size: 0.9rem;
-      }
-      button {
-        font-size: 1rem;
-        min-width: 120px;
-        padding: 0.55rem 1.5rem;
-      }
-      .bg-text {
-        font-size: 2rem !important;
+      #welcome h1 {
+        font-size: 2rem;
       }
     }
   </style>
 </head>
 <body>
+
+  <!-- 🌟 Willkommensbildschirm -->
+  <div id="welcome">
+    <h1>Willkommen auf<br />deiner YouTube Stats Seite!</h1>
+  </div>
+
+  <!-- 🎯 Stats Inhalt -->
   <h1>YouTube Kanal-Stats</h1>
   <div id="stats">
     <p><strong>Kanal:</strong> <span id="channelTitle">...</span></p>
     <p><strong>Abonnenten:</strong> <span id="subscriberCount">...</span></p>
     <p><strong>Gesamt-Views:</strong> <span id="viewCount">...</span></p>
     <p class="goal" id="goalText"></p>
-    <div class="buttons">
+    <div>
       <button id="refreshBtn">Aktualisieren</button>
-      <button id="channelLinkBtn" title="Zum Kanal öffnen">Zum Kanal</button>
+      <button id="channelLinkBtn">Zum Kanal</button>
     </div>
   </div>
 
@@ -250,75 +181,55 @@
 
     async function loadStats() {
       try {
-        const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${apiKey}`;
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (!data.items || data.items.length === 0) {
-          document.getElementById('channelTitle').textContent = "Kanal nicht gefunden";
-          return;
-        }
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${apiKey}`);
+        const data = await res.json();
 
         const stats = data.items[0].statistics;
         const snippet = data.items[0].snippet;
 
-        document.getElementById('channelTitle').textContent = snippet.title;
-        const subs = parseInt(stats.subscriberCount, 10);
-        document.getElementById('subscriberCount').textContent = subs.toLocaleString('de-DE');
-        document.getElementById('viewCount').textContent = parseInt(stats.viewCount, 10).toLocaleString('de-DE');
+        const subs = parseInt(stats.subscriberCount);
+        const views = parseInt(stats.viewCount);
 
-        // Vollständiger Satz für Abo-Ziel
+        document.getElementById('channelTitle').textContent = snippet.title;
+        document.getElementById('subscriberCount').textContent = subs.toLocaleString('de-DE');
+        document.getElementById('viewCount').textContent = views.toLocaleString('de-DE');
+
         const nextGoal = Math.ceil(subs / 10) * 10;
         const remaining = nextGoal - subs;
 
-        const goalText = remaining > 0 
-          ? `Es fehlen noch ${remaining} Abonnent${remaining > 1 ? 'en' : ''}, um ${nextGoal} zu erreichen.` 
-          : `Herzlichen Glückwunsch! Du hast ${subs} Abonnent${subs > 1 ? 'en' : ''} erreicht!`;
+        document.getElementById('goalText').textContent = remaining > 0
+          ? `Es fehlen noch ${remaining} Abonnent${remaining > 1 ? 'en' : ''}, um ${nextGoal} zu erreichen.`
+          : `Herzlichen Glückwunsch! Du hast ${subs} Abonnenten erreicht!`;
 
-        document.getElementById('goalText').textContent = goalText;
-
-        // Kanal-Link Button URL setzen
-        channelLinkBtn.onclick = () => {
-          window.open(`https://www.youtube.com/channel/${channelId}`, '_blank');
-        };
-      } catch (e) {
-        console.error("Fehler beim Laden der Daten:", e);
+        channelLinkBtn.onclick = () => window.open(`https://www.youtube.com/channel/${channelId}`, '_blank');
+      } catch (err) {
+        console.error("Fehler beim Laden:", err);
         document.getElementById('channelTitle').textContent = "Fehler beim Laden";
       }
     }
 
     refreshBtn.addEventListener('click', loadStats);
 
-    // Initial laden
     loadStats();
 
-    // Hintergrundtexte "developed by Jakob" random einfügen und animieren
+    // 💨 Begrüßung automatisch ausblenden nach 3 Sekunden
+    setTimeout(() => {
+      const welcome = document.getElementById('welcome');
+      welcome.classList.add('fadeOut');
+      setTimeout(() => welcome.remove(), 1000);
+    }, 3000);
+
+    // 🎇 Hintergrundanimation
     function createBgText() {
       const bgText = document.createElement('div');
       bgText.className = 'bg-text';
       bgText.textContent = 'developed by Jakob';
-
-      // Zufällige Höhe zwischen 5% und 90% vom Viewport
-      const top = Math.random() * 85 + 5;
-      bgText.style.top = `${top}vh`;
-
-      // Zufällige Animationsdauer 7-13 Sekunden
-      const duration = Math.random() * 6 + 7;
-      bgText.style.animationDuration = `${duration}s`;
-
-      // Zufällige Schriftgröße 2-4 rem
-      const size = Math.random() * 2 + 2;
-      bgText.style.fontSize = `${size}rem`;
-
+      bgText.style.top = `${Math.random() * 80 + 10}vh`;
+      bgText.style.fontSize = `${Math.random() * 2 + 2}rem`;
       document.body.appendChild(bgText);
-
-      // Nach Animationsende entfernen
-      setTimeout(() => {
-        bgText.remove();
-      }, duration * 1000);
+      setTimeout(() => bgText.remove(), 10000);
     }
 
-    // Alle 1.3 Sekunden ein neuer bg-text
     setInterval(createBgText, 1300);
   </script>
 </body>
