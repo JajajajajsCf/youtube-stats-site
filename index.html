@@ -5,78 +5,62 @@
   <title>YouTube Stats</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* Basis-Styles siehe dein bisheriger Code … */
-    html, body {
+    /* Schrift glätten für alle Browser */
+    body {
       margin: 0;
       padding: 0;
-      background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #000;
       color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      overflow-x: hidden;
     }
 
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow: hidden;
-      position: relative;
-      padding: 1rem;
-    }
-
-    /* ✨ Willkommensbildschirm */
+    /* Begrüßung */
     #welcome {
       position: fixed;
-      inset: 0;
+      width: 100%;
+      height: 100%;
       background: #000;
-      z-index: 999;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
-      transition: opacity 1s ease, transform 1s ease;
-      animation: fadeInScale 1s ease;
+      font-size: 2rem;
+      z-index: 9999;
+      animation: fallAway 3.5s forwards ease-in-out;
     }
 
-    #welcome h1 {
-      font-size: 3rem;
-      color: #007aff;
-      animation: glow 2s ease-in-out infinite alternate;
-      text-align: center;
-    }
-
-    @keyframes glow {
-      0% { text-shadow: 0 0 10px #007aff88; }
-      100% { text-shadow: 0 0 25px #00e0ffcc; }
-    }
-
-    @keyframes fadeInScale {
-      from {
-        opacity: 0;
-        transform: scale(0.9);
-      }
-      to {
+    @keyframes fallAway {
+      0% {
         opacity: 1;
-        transform: scale(1);
+        transform: translateY(0);
+      }
+      80% {
+        opacity: 0.8;
+        transform: translateY(100px) rotateX(30deg) scale(0.95);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-200vh) rotateX(80deg) scale(0);
+        display: none;
       }
     }
 
-    .fadeOut {
-      opacity: 0;
-      transform: scale(1.05);
-      pointer-events: none;
+    h1 {
+      text-align: center;
+      margin: 2rem 0 1rem;
+      font-size: 2.5rem;
     }
 
-    /* Stat Container (dein bestehendes Styling leicht verkürzt) */
     #stats {
       background: #111;
-      padding: 2rem 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgb(0 0 255 / 0.3);
+      margin: 0 auto;
       max-width: 400px;
+      padding: 2rem;
+      border-radius: 16px;
       text-align: center;
+      box-shadow: 0 8px 24px rgb(0 0 255 / 0.3);
       transition: all 0.3s ease;
     }
 
@@ -89,86 +73,104 @@
 
     #stats p {
       margin: 1rem 0;
-      font-size: 1.1rem;
+    }
+
+    .goal {
+      color: #007aff;
+      font-style: italic;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
     }
 
     button {
-      padding: 0.65rem 2rem;
-      margin: 0.5rem;
-      border-radius: 12px;
-      font-weight: 700;
+      padding: 0.6rem 1.5rem;
       font-size: 1rem;
+      border-radius: 12px;
       border: none;
       cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
 
     #refreshBtn {
-      background: #007aff;
+      background-color: #007aff;
       color: white;
+    }
+
+    #refreshBtn:hover {
+      background-color: #005bb5;
     }
 
     #channelLinkBtn {
       background: transparent;
-      color: #007aff;
       border: 2px solid #007aff;
+      color: #007aff;
+    }
+
+    #channelLinkBtn:hover {
+      background-color: #007aff;
+      color: white;
+    }
+
+    #videos {
+      margin: 3rem auto;
+      max-width: 800px;
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      padding: 0 1rem;
+    }
+
+    iframe {
+      width: 100%;
+      height: 200px;
+      border: none;
+      border-radius: 12px;
     }
 
     footer {
       position: fixed;
-      bottom: 1rem;
       right: 1rem;
-      font-size: 0.8rem;
-      color: #444;
+      bottom: 1rem;
+      font-size: 0.9rem;
+      color: red;
+      z-index: 10;
     }
 
-    .bg-text {
+    /* Schneeflocken */
+    .snowflake {
       position: fixed;
-      color: rgba(0, 122, 255, 0.07);
-      font-weight: 700;
+      color: white;
       user-select: none;
       pointer-events: none;
-      animation: fadeMove 10s linear infinite;
-      white-space: nowrap;
-      z-index: 1;
-    }
-
-    @keyframes fadeMove {
-      0% { opacity: 0; transform: translateX(100vw); }
-      10% { opacity: 0.15; }
-      50% { opacity: 0.07; }
-      90% { opacity: 0; transform: translateX(-100vw); }
-      100% { opacity: 0; }
-    }
-
-    @media (max-width: 480px) {
-      #stats {
-        width: 100%;
-      }
-      #welcome h1 {
-        font-size: 2rem;
-      }
+      font-size: 1rem;
+      z-index: 0;
     }
   </style>
 </head>
 <body>
+  <div id="welcome">Herzlich Willkommen</div>
 
-  <!-- 🌟 Willkommensbildschirm -->
-  <div id="welcome">
-    <h1>Willkommen auf<br />deiner YouTube Stats Seite!</h1>
-  </div>
-
-  <!-- 🎯 Stats Inhalt -->
   <h1>YouTube Kanal-Stats</h1>
+
   <div id="stats">
     <p><strong>Kanal:</strong> <span id="channelTitle">...</span></p>
     <p><strong>Abonnenten:</strong> <span id="subscriberCount">...</span></p>
-    <p><strong>Gesamt-Views:</strong> <span id="viewCount">...</span></p>
+    <p><strong>Views:</strong> <span id="viewCount">...</span></p>
     <p class="goal" id="goalText"></p>
-    <div>
+    <div class="buttons">
       <button id="refreshBtn">Aktualisieren</button>
       <button id="channelLinkBtn">Zum Kanal</button>
     </div>
   </div>
+
+  <div id="videos"></div>
 
   <footer>developed by Jakob</footer>
 
@@ -176,61 +178,74 @@
     const apiKey = 'AIzaSyAVXXKVyZu2mk38HoKZlyehPimjfDGQBaw';
     const channelId = 'UC419XwNMLkI5KmVCo9sRPQg';
 
-    const refreshBtn = document.getElementById('refreshBtn');
-    const channelLinkBtn = document.getElementById('channelLinkBtn');
-
     async function loadStats() {
+      const statsUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${apiKey}`;
+      const vidsUrl = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=3`;
+
       try {
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${apiKey}`);
-        const data = await res.json();
+        const [statsRes, vidsRes] = await Promise.all([
+          fetch(statsUrl),
+          fetch(vidsUrl)
+        ]);
+        const statsData = await statsRes.json();
+        const vidsData = await vidsRes.json();
 
-        const stats = data.items[0].statistics;
-        const snippet = data.items[0].snippet;
-
-        const subs = parseInt(stats.subscriberCount);
-        const views = parseInt(stats.viewCount);
+        const snippet = statsData.items[0].snippet;
+        const stats = statsData.items[0].statistics;
 
         document.getElementById('channelTitle').textContent = snippet.title;
+        const subs = parseInt(stats.subscriberCount, 10);
         document.getElementById('subscriberCount').textContent = subs.toLocaleString('de-DE');
-        document.getElementById('viewCount').textContent = views.toLocaleString('de-DE');
+        document.getElementById('viewCount').textContent = parseInt(stats.viewCount, 10).toLocaleString('de-DE');
 
         const nextGoal = Math.ceil(subs / 10) * 10;
         const remaining = nextGoal - subs;
+        document.getElementById('goalText').textContent = 
+          remaining > 0 
+            ? `Es fehlen noch ${remaining} Abonnent${remaining > 1 ? 'en' : ''} bis ${nextGoal}.`
+            : `Ziel erreicht mit ${subs} Abonnenten!`;
 
-        document.getElementById('goalText').textContent = remaining > 0
-          ? `Es fehlen noch ${remaining} Abonnent${remaining > 1 ? 'en' : ''}, um ${nextGoal} zu erreichen.`
-          : `Herzlichen Glückwunsch! Du hast ${subs} Abonnenten erreicht!`;
+        document.getElementById('channelLinkBtn').onclick = () => {
+          window.open(`https://www.youtube.com/channel/${channelId}`, '_blank');
+        };
 
-        channelLinkBtn.onclick = () => window.open(`https://www.youtube.com/channel/${channelId}`, '_blank');
+        const videosEl = document.getElementById('videos');
+        videosEl.innerHTML = "";
+        vidsData.items.forEach(item => {
+          if (item.id.videoId) {
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${item.id.videoId}`;
+            videosEl.appendChild(iframe);
+          }
+        });
+
       } catch (err) {
-        console.error("Fehler beim Laden:", err);
-        document.getElementById('channelTitle').textContent = "Fehler beim Laden";
+        console.error("Fehler beim Laden der Daten:", err);
       }
     }
 
-    refreshBtn.addEventListener('click', loadStats);
-
+    document.getElementById('refreshBtn').addEventListener('click', loadStats);
     loadStats();
 
-    // 💨 Begrüßung automatisch ausblenden nach 3 Sekunden
-    setTimeout(() => {
-      const welcome = document.getElementById('welcome');
-      welcome.classList.add('fadeOut');
-      setTimeout(() => welcome.remove(), 1000);
-    }, 3000);
+    // Schneeflocken folgen der Maus
+    document.addEventListener('mousemove', (e) => {
+      const flake = document.createElement('div');
+      flake.className = 'snowflake';
+      flake.style.left = `${e.clientX}px`;
+      flake.style.top = `${e.clientY}px`;
+      flake.textContent = '❄️';
 
-    // 🎇 Hintergrundanimation
-    function createBgText() {
-      const bgText = document.createElement('div');
-      bgText.className = 'bg-text';
-      bgText.textContent = 'developed by Jakob';
-      bgText.style.top = `${Math.random() * 80 + 10}vh`;
-      bgText.style.fontSize = `${Math.random() * 2 + 2}rem`;
-      document.body.appendChild(bgText);
-      setTimeout(() => bgText.remove(), 10000);
-    }
+      document.body.appendChild(flake);
 
-    setInterval(createBgText, 1300);
+      const fall = setInterval(() => {
+        const top = parseInt(flake.style.top || 0);
+        flake.style.top = `${top + 2}px`;
+        if (top > window.innerHeight) {
+          clearInterval(fall);
+          flake.remove();
+        }
+      }, 16);
+    });
   </script>
 </body>
 </html>
